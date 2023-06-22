@@ -1,0 +1,28 @@
+  ONEL ALEXANDRU 322CB  
+    Am inceput tema prin vizionarea video urilor lui Ben Eater de pe youtube. Am citit toate paginile site ului si am continuat cu algoritmul
+precizat la Ipv4. Primii pasi am extras headerul Ip din pachetul primit si am verificat checksumul pentru a vedea daca e corupt. Daca era
+corupt ii dadeam drop prin continue. Am mai verifict type ul din ether header, in caz ca nu era arp sau ipv4 rezulta drop. Daca tot a mers
+okay decrementam ttl ul deoarece pachetul a mai parcurs un hop. Cautam ruta cea mai buna pentru pachet din tabela de rutare, refac checksumul
+iphdr dupa modificarea ttl ului. Pentru pachetul ethernet sursa am pus o adresa mac a interfetei pe care va fi trimis pachetul. Mac ul destinatie
+l am luat din tabela arp statica si am trimis pachetul. Asta am facut pentru primele puncte. 
+    Am implementat LPM eficient prin sortarea tabelei de rutare(se executa doar la pornirea 
+routerului) si m am folosit de cautarea binara pentru a gasi eficient in O(log n). Pentru sortare am avut nevoie sa convertesc doar masca si 
+prefixul prin cele 2 functii ale mele, dupa ce am sortat le am pus la loc. Am folosit functia qsort si mi am facut propria 
+functie de comparare care sorteaza mai intai dupa prefix si ulterior dupa lungimea mastii.
+    Am implementat ICMP si l am testat sa vad daca se opreste ping ul dupa ce a luat punctele pe checker.
+Initial nu se oprea dar am reusit sa il repar.(daca sunt cateva campuri diferite nu se opreste pingul, checkerul cred ca
+verifica mult mai putine campuri). ICMP ul se imparte in mai multe cazuri: router_icmp cand ii dau un ping routerului. Functia
+care se ocupa de asta este routerReply unde creez un nou ether header si ip header si pastrez icmp ul primit, dar ii modific
+urmatoarele campuri: code, type si checksumul. Pentru generarea icmp pentru cazul de TTL<=1 si Destination Ureacheable am o
+functie comuna deoarece difera doar code ul. Functia generareICMPTtlUnreacheable apeleaza functia generareIcmpPartial care
+adauga ether headerul,ip headerul nou si icmp headerul. Dupa apeleaza generareIcmpContinuare si adauga vechiul ip header
+si primii 64 de biti din payload.
+    Am implementat si protocolul ARP, initial am facut toate cerintele cu arp static si am modificat codul.A fost relativ
+okay de schimbat, mi am creat un if in care verific daca e pachet de tip arp si il predau mai departe in functia processArp.
+Functia processArp are 2 cazuri: arp reply(unde primesc un MAC de care aveam nevoie) si cazul in care routerul trebuie sa trimita
+el MAC ul. Cand primesc un MAC de care am nevoie, parcurg toate pachetele din coada si verific daca noile intrari din tabela
+arp contin ip ul si mac ul de care are nevoie. Mai exista si cazul cand generez un arp request atunci cand nu gasesc 
+arp ul in tabela arp. Dupa trimiterea arp request ului la intoarcerea din functie dau continue. 
+    Am lasat mai multe comentarii in cod pentru o intelegere mai usoara. 
+    Tema a fost interesanta, o tema pe care o voi salva pentru CV.
+
